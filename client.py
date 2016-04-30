@@ -12,6 +12,7 @@ def start():
         if data=='' or not data:
             break
         total_data.append(data.decode())
+        print(data.decode())
     sock.close()
     print(''.join(total_data))
 

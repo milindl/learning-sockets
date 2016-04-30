@@ -1,5 +1,11 @@
-import socket,os
+import socket,time,threading
 #Sage advice server
+
+def magic_counter(con_socket):
+    for i in range(10):
+        con_socket.send(str(i).encode())
+        time.sleep(0.5)
+    con_socket.close()
 
 def start():
     host = "127.0.0.1"
@@ -9,14 +15,13 @@ def start():
     ssock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     ssock.bind((host,port))
 
-    ssock.listen(1)
+    ssock.listen(3)
 
 
     while True:
         conn, addr = ssock.accept()
-        advice =os.popen("fortune").read()
-        conn.send(advice.encode())
-        conn.close()
+        t = threading.Thread(target=magic_counter, args=(conn,))
+        t.start()
     ssock.close()
 if __name__ == '__main__':
     start()
