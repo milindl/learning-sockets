@@ -1,14 +1,27 @@
 import socket,time,threading,os
 #Server, the receiver of messages
-
+speaking_lk = threading.Lock()
+currently_speaking=-1
 def logger(con_socket, con_socket_num):
+    global currently_speaking
     '''
         Logs messages by printing them
     '''
     while True:
         data = con_socket.recv(10).decode()
-        if not data or data=='': break
-        print(str(con_socket_num) + ":" + data)
+        speaking_lk.acquire()
+        if not data or data=='':
+            break
+
+
+        if currently_speaking==con_socket_num:
+            print('' +data, end='')
+
+        if currently_speaking!=con_socket_num:
+            print(''+str(con_socket_num) + ":" + data,end='')
+            currently_speaking = con_socket_num
+        #time.sleep(2)
+        speaking_lk.release()
     con_socket.close()
 
 def start():
@@ -30,4 +43,5 @@ def start():
         t.start()
     ssock.close()
 if __name__ == '__main__':
+    currently_speaking = -1
     start()

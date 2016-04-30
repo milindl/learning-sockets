@@ -9,10 +9,11 @@ def start():
     message = ''
     while message!='q':
         message = input('>>')
+        message = message + '\n'
         sock.send(message.encode())
 
     sock.close()
-    
+
 
 if __name__ == '__main__':
     start()
