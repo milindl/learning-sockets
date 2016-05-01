@@ -18,9 +18,9 @@ def receiver(sock):
         data = sock.recv(1024).decode()
         if not data:
             break
-        input_and_print_lock.acquire()
+        #input_and_print_lock.acquire()
         print("Recvd message follows: " + data)
-        input_and_print_lock.release()
+        #input_and_print_lock.release()
 
 if __name__ == '__main__':
     host = '127.0.0.1'

@@ -1,6 +1,7 @@
 import socket,time,threading,os
 #Server, the receiver of messages
 speaking_lk = threading.Lock()
+broadcast_lk = threading.Lock()
 currently_speaking=-1
 
 def send_to_all(socket_list, mess):
@@ -48,6 +49,8 @@ def start():
         conn, addr = ssock.accept()
         socket_list.append(conn)
         current_con_sock_num+=1
+        with broadcast_lk:
+            threading.Thread(target=send_to_all, args=(socket_list,str(current_con_sock_num)+' has joined',)).start()
         t = threading.Thread(target=logger, args=(conn,current_con_sock_num, socket_list))
         t.start()
     ssock.close()
