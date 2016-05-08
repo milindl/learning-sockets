@@ -4,19 +4,18 @@ import tkinter as tk
 class AcceptClient:
     def __init__(self):
         self.window = tk.Tk()
-        self.main_txt_lock = threading.Lock()
-        self.need_to_shutdown = threading.Event()
+        self.message_q = []
         self.main_txt = None
         self.entry_bar = None
         self.host = '127.0.0.1'
         self.port=7801
+        self.message_q_lock = threading.Lock()
         self.sock = socket.socket()
 
+
     def close_gracefully(self):
-        self.need_to_shutdown.set()
-        with self.main_txt_lock:
-            self.window.destroy()
-        exit(0)
+        self.sock.close()
+        self.window.destroy()
 
 
     def send(self,event):
@@ -27,14 +26,20 @@ class AcceptClient:
         self.sock.send(message)
 
     def receive(self):
-        while not self.need_to_shutdown.is_set():
+        while True:
             data = self.sock.recv(1024).decode()
             if not data:
                 break
-            with self.main_txt_lock:
-                self.main_txt.insert(tk.END, data)
-        self.sock.close()
+            with self.message_q_lock:
+                self.message_q.append(data)
 
+    def receiveq(self):
+        self.message_q_lock.acquire()
+        while len(self.message_q) != 0:
+            mes = self.message_q.pop(0)
+            self.main_txt.insert(tk.END, mes)
+        self.message_q_lock.release()
+        self.window.after(100, self.receiveq)
 
     def setup_gui(self):
         self.window.title("Chat Interface")
@@ -57,7 +62,8 @@ class AcceptClient:
 
     def start(self):
         self.sock.connect((self.host,self.port))
-        threading.Thread(target = self.receive).start()
+        threading.Thread(target=self.receive, daemon=True).start()
+        self.window.after(100, self.receiveq)
         self.window.mainloop()
 
 
