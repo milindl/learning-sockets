@@ -17,6 +17,7 @@ class CastServer:
                 self.sock_list.remove(sock)
                 sock.close()
                 break
+            print(data)
             self.send_q.append(data)
 
     def sender(self):
