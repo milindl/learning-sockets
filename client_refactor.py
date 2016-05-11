@@ -2,23 +2,40 @@ import threading, socket
 import tkinter as tk
 
 class AcceptClient:
-    def __init__(self):
+    def __init__(self, host='127.0.0.1', port=7801):
+        '''
+        Constructor for the client
+        __init__(host, port)
+        '''
         self.window = tk.Tk()
         self.message_q = []
         self.main_txt = None
         self.entry_bar = None
-        self.host = '127.0.0.1'
-        self.port=7801
+        self.host = host
+        self.port=port
         self.message_q_lock = threading.Lock()
         self.sock = socket.socket()
 
 
     def close_gracefully(self):
+        '''
+        Used to close the socket and destroy the window carefully.
+        close_gracefully():None
+        '''
         self.sock.close()
         self.window.destroy()
 
 
     def send(self,event):
+        '''
+        Used to send a message to the server.
+        Clears the gui also.
+        Is an event handler too, for the event "Return"
+        send(self, event)
+        send(event)
+        send()
+        :None
+        '''
         message = self.entry_bar.get()
         self.entry_bar.delete(0,tk.END)
         message+='\n'
@@ -26,6 +43,10 @@ class AcceptClient:
         self.sock.send(message)
 
     def receive(self):
+        '''
+        The recieve thread. Listens at the host and port and then appends the message to the incoming message q.
+        recieve():None
+        '''
         while True:
             data = self.sock.recv(1024).decode()
             if not data:
@@ -34,6 +55,12 @@ class AcceptClient:
                 self.message_q.append(data)
 
     def receive_display(self):
+        '''
+        Takes messages from the message_q and appends it to the text area.
+        Uses after-polling mechanism.
+        Possible TODO: using threading with Tk..?
+        receive_display():None
+        '''
         self.message_q_lock.acquire()
         while len(self.message_q) != 0:
             mes = self.message_q.pop(0)
@@ -42,6 +69,10 @@ class AcceptClient:
         self.window.after(100, self.receive_display)
 
     def setup_gui(self):
+        '''
+        This sets up the gui.
+        setup_gui():None
+        '''
         self.window.title("Chat Interface")
         self.window.geometry('900x500')
         upper_frame =  tk.Frame()
@@ -61,6 +92,10 @@ class AcceptClient:
         #gui_setup_lock.release()
 
     def start(self):
+        '''
+        Starts reciever thread and mainloop.
+        start():None
+        '''
         self.sock.connect((self.host,self.port))
         threading.Thread(target=self.receive, daemon=True).start()
         self.window.after(100, self.receive_display)
