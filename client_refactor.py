@@ -33,13 +33,13 @@ class AcceptClient:
             with self.message_q_lock:
                 self.message_q.append(data)
 
-    def receiveq(self):
+    def receive_display(self):
         self.message_q_lock.acquire()
         while len(self.message_q) != 0:
             mes = self.message_q.pop(0)
             self.main_txt.insert(tk.END, mes)
         self.message_q_lock.release()
-        self.window.after(100, self.receiveq)
+        self.window.after(100, self.receive_display)
 
     def setup_gui(self):
         self.window.title("Chat Interface")
@@ -63,7 +63,7 @@ class AcceptClient:
     def start(self):
         self.sock.connect((self.host,self.port))
         threading.Thread(target=self.receive, daemon=True).start()
-        self.window.after(100, self.receiveq)
+        self.window.after(100, self.receive_display)
         self.window.mainloop()
 
 
